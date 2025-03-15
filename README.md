@@ -66,7 +66,28 @@ ls 03_binning/SLMU_bin.*.fa
 - **MetaBAT2** uses sequence composition and coverage data to cluster contigs into MAGs.
 - The final output consists of individual genome bins (**SLMU_bin.*.fa** files).
 
-### 5. Taxonomic Classification of MAGs
+### 5. Mapping Reads to MAGs
+To further validate the recovered MAGs, we map reads back to them:
+```bash
+mkdir -p 05_genome_mapping
+bowtie2-build 03_binning/SLMU_bin.5.fa 05_genome_mapping/SLMU_bin5.idx
+bowtie2 -1 SLMU.1.fastq.gz -2 SLMU.2.fastq.gz -S 05_genome_mapping/SLMU_bin5.sam -x 05_genome_mapping/SLMU_bin5.idx --no-unal
+```
+
+### 6. Recruitment Plots
+Recruitment plots visualize genome coverage across samples:
+```bash
+mkdir -p 06_recplot
+rpe build -d 06_recplot/SLMU_5.db -r 05_genome_mapping/SLMU_bin5.sam -g 03_binning/SLMU_bin.5.fa --mag
+rpe plot -d 06_recplot/SLMU_5.db
+mv recruitment_plots 06_recplot/
+```
+- The resulting **SLMU_bin_recruitment_plot.html** helps assess the coverage and depth of MAGs across metagenomes.
+- Open the file for visual inspection:
+```bash
+06_recplot/recruitment_plots/SLMU_bin5_sam/SLMU_bin_recruitment_plot.html
+```
+### 7. Taxonomic Classification of MAGs
 
 Using online **MiGA** tool
 https://uibk.microbial-genomes.org/
@@ -84,28 +105,6 @@ miga index_wf -o 04_classification/Sal -v
 - Once complete, open the classification results:
 ```bash
 04_classification/Sal/index.html
-```
-
-### 6. Mapping Reads to MAGs
-To further validate the recovered MAGs, we map reads back to them:
-```bash
-mkdir -p 05_genome_mapping
-bowtie2-build 03_binning/SLMU_bin.5.fa 05_genome_mapping/SLMU_bin5.idx
-bowtie2 -1 SLMU.1.fastq.gz -2 SLMU.2.fastq.gz -S 05_genome_mapping/SLMU_bin5.sam -x 05_genome_mapping/SLMU_bin5.idx --no-unal
-```
-
-### 7. Recruitment Plots
-Recruitment plots visualize genome coverage across samples:
-```bash
-mkdir -p 06_recplot
-rpe build -d 06_recplot/SLMU_5.db -r 05_genome_mapping/SLMU_bin5.sam -g 03_binning/SLMU_bin.5.fa --mag
-rpe plot -d 06_recplot/SLMU_5.db
-mv recruitment_plots 06_recplot/
-```
-- The resulting **SLMU_bin_recruitment_plot.html** helps assess the coverage and depth of MAGs across metagenomes.
-- Open the file for visual inspection:
-```bash
-06_recplot/recruitment_plots/SLMU_bin5_sam/SLMU_bin_recruitment_plot.html
 ```
 
 ## Software Used
