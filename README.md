@@ -67,6 +67,12 @@ ls 03_binning/SLMU_bin.*.fa
 - The final output consists of individual genome bins (**SLMU_bin.*.fa** files).
 
 ### 5. Taxonomic Classification of MAGs
+
+Using online **MiGA** tool
+https://uibk.microbial-genomes.org/
+
+
+**In our COMPUTER**
 To compare a MAG against closely related genomes, we use **MiGA**:
 ```bash
 miga new -P 04_classification/Sal -t genomes
