@@ -24,8 +24,11 @@ cd SLMU
 We use **Nonpareil** to estimate sequencing redundancy and coverage:
 ```bash
 mkdir -p 00_nonpareil
+
 nonpareil -T kmer -s SLMU.1.fastq.gz -f fastq -b 00_nonpareil/SLMU
+
 NonpareilCurves.R --pdf 00_nonpareil/SLMU.pdf --no-observed 00_nonpareil/SLMU.npo
+
 open 00_nonpareil/SLMU.pdf
 ```
 - **Nonpareil** estimates how much of the microbial diversity has been sequenced.
@@ -40,7 +43,9 @@ spades.py --meta -1 SLMU.1.fastq.gz -2 SLMU.2.fastq.gz -o 01_assembly
 - If it's too slow, use the precomputed scaffold file:
 ```bash
 rm -rf 01_assembly
+
 mkdir -p 01_assembly
+
 cp SLMU.scaffolds.fasta 01_assembly/scaffolds.fasta
 ```
 
@@ -48,9 +53,13 @@ cp SLMU.scaffolds.fasta 01_assembly/scaffolds.fasta
 We map sequencing reads back to the assembled scaffolds using **Bowtie2**:
 ```bash
 mkdir -p 02_mapping
+
 bowtie2-build 01_assembly/scaffolds.fasta 02_mapping/SLMU.idx
+
 bowtie2 -1 SLMU.1.fastq.gz -2 SLMU.2.fastq.gz -S 02_mapping/SLMU.sam -x 02_mapping/SLMU.idx --no-unal
+
 samtools view -b 02_mapping/SLMU.sam | samtools sort -o 02_mapping/SLMU.bam -
+
 ls 02_mapping
 ```
 - Mapping allows us to determine which contigs are well-supported by sequencing reads.
@@ -59,8 +68,11 @@ ls 02_mapping
 Binning is performed using **MetaBAT2**, grouping contigs into draft genomes:
 ```bash
 mkdir -p 03_binning
+
 jgi_summarize_bam_contig_depths --outputDepth 03_binning/SLMU.abund 02_mapping/SLMU.bam
+
 metabat2 -i 01_assembly/scaffolds.fasta -a 03_binning/SLMU.abund -o 03_binning/SLMU_bin
+
 ls 03_binning/SLMU_bin.*.fa
 ```
 - **MetaBAT2** uses sequence composition and coverage data to cluster contigs into MAGs.
@@ -70,7 +82,9 @@ ls 03_binning/SLMU_bin.*.fa
 To further validate the recovered MAGs, we map reads back to them:
 ```bash
 mkdir -p 05_genome_mapping
+
 bowtie2-build 03_binning/SLMU_bin.5.fa 05_genome_mapping/SLMU_bin5.idx
+
 bowtie2 -1 SLMU.1.fastq.gz -2 SLMU.2.fastq.gz -S 05_genome_mapping/SLMU_bin5.sam -x 05_genome_mapping/SLMU_bin5.idx --no-unal
 ```
 
@@ -78,12 +92,16 @@ bowtie2 -1 SLMU.1.fastq.gz -2 SLMU.2.fastq.gz -S 05_genome_mapping/SLMU_bin5.sam
 Recruitment plots visualize genome coverage across samples:
 ```bash
 mkdir -p 06_recplot
+
 rpe build -d 06_recplot/SLMU_5.db -r 05_genome_mapping/SLMU_bin5.sam -g 03_binning/SLMU_bin.5.fa --mag
+
 rpe plot -d 06_recplot/SLMU_5.db
+
 mv recruitment_plots 06_recplot/
 ```
 - The resulting **SLMU_bin_recruitment_plot.html** helps assess the coverage and depth of MAGs across metagenomes.
 - Open the file for visual inspection:
+
 ```bash
 06_recplot/recruitment_plots/SLMU_bin5_sam/SLMU_bin_recruitment_plot.html
 ```
@@ -97,8 +115,11 @@ https://uibk.microbial-genomes.org/
 To compare a MAG against closely related genomes, we use **MiGA**:
 ```bash
 miga new -P 04_classification/Sal -t genomes
+
 miga gtdb_get -P 04_classification/Sal -T g__Salinibacter --ref -v
+
 miga add -P 04_classification/Sal -i assembly -t popgenome 03_binning/SLMU_bin.*.fa
+
 miga index_wf -o 04_classification/Sal -v
 ```
 - This step retrieves reference genomes and performs a taxonomic classification of our MAGs.
