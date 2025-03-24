@@ -41,6 +41,7 @@ spades.py --meta -1 SLMU.1.fastq.gz -2 SLMU.2.fastq.gz -o 01_assembly
 ```
 - This step can take a long time and require high RAM usage.
 - If it's too slow, use the precomputed scaffold file:
+
 ```bash
 rm -rf 01_assembly
 
